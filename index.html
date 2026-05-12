@@ -1,0 +1,336 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BLOC A — Guide Setup Unity</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#070707;color:#aaa;font-family:'Share Tech Mono',monospace;line-height:1.7;padding:20px}
+h1{font-family:'Bebas Neue',sans-serif;font-size:52px;color:#e0a030;letter-spacing:4px;margin-bottom:4px}
+h2{font-family:'Bebas Neue',sans-serif;font-size:28px;color:#c87020;letter-spacing:2px;margin:32px 0 12px;border-bottom:1px solid #1a1a1a;padding-bottom:6px}
+h3{color:#ccc;font-size:14px;margin:20px 0 8px;letter-spacing:1px}
+p{color:#777;font-size:13px;margin-bottom:10px}
+.badge{display:inline-block;font-size:9px;letter-spacing:3px;color:#333;border:1px solid #1a1a1a;padding:3px 10px;margin-bottom:16px}
+.step{background:#0d0d0d;border:1px solid #1a1a1a;border-left:3px solid #e0a030;padding:16px 18px;margin-bottom:12px}
+.step-num{font-size:9px;color:#e0a030;letter-spacing:3px;margin-bottom:6px}
+.step-title{color:#ccc;font-size:14px;font-weight:700;margin-bottom:8px}
+.step-desc{color:#666;font-size:12px;line-height:1.8}
+.code{background:#050505;border:1px solid #1a1a1a;padding:12px 14px;font-size:11px;color:#4a9a4a;margin:8px 0;overflow-x:auto;line-height:1.8}
+.file-tree{background:#050505;border:1px solid #1a1a1a;padding:14px;font-size:11px;color:#555;line-height:2}
+.file-tree .folder{color:#e0a030}
+.file-tree .cs{color:#4a8fcc}
+.tip{background:#0a0f0a;border:1px solid #1a3a1a;padding:12px 14px;font-size:12px;color:#4a9a4a;margin:10px 0}
+.warn{background:#0f0a0a;border:1px solid #3a1a1a;padding:12px 14px;font-size:12px;color:#cc4040;margin:10px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:16px 0}
+.card{background:#0d0d0d;border:1px solid #1a1a1a;padding:14px}
+.card-title{color:#ccc;font-size:12px;margin-bottom:6px;letter-spacing:1px}
+.card-desc{color:#555;font-size:11px;line-height:1.6}
+a{color:#4a8fcc;text-decoration:none}
+a:hover{color:#e0a030}
+table{width:100%;border-collapse:collapse;font-size:12px;margin:12px 0}
+th{font-size:9px;letter-spacing:2px;color:#333;text-align:left;padding:7px 10px;border-bottom:1px solid #1a1a1a}
+td{padding:9px 10px;border-bottom:1px solid #0f0f0f;color:#666}
+td:first-child{color:#888}
+</style>
+</head>
+<body>
+
+<div class="badge">GUIDE COMPLET — MISE EN PLACE UNITY</div>
+<h1>BLOC A</h1>
+<p>Guide pas-à-pas pour installer Unity et faire tourner le prototype prison RP en 30 minutes.</p>
+
+<h2>1. INSTALLATION UNITY</h2>
+
+<div class="step">
+  <div class="step-num">ÉTAPE 01</div>
+  <div class="step-title">Télécharger Unity Hub</div>
+  <div class="step-desc">
+    Va sur <a href="https://unity.com/download" target="_blank">unity.com/download</a> et télécharge <strong>Unity Hub</strong>.<br>
+    C'est gratuit. C'est le gestionnaire de versions Unity.<br><br>
+    Une fois installé, ouvre Unity Hub → onglet <strong>"Installs"</strong> → <strong>"Install Editor"</strong><br>
+    → Choisis la version <strong>Unity 2022.3 LTS</strong> (la plus stable).<br><br>
+    <strong>Modules à cocher lors de l'installation :</strong><br>
+    ✅ Android Build Support (pour mobile)<br>
+    ✅ iOS Build Support (si tu as un Mac)<br>
+    ✅ Windows Build Support<br>
+    ✅ Visual Studio (éditeur de code gratuit)
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">ÉTAPE 02</div>
+  <div class="step-title">Créer le projet</div>
+  <div class="step-desc">
+    Dans Unity Hub → <strong>"New Project"</strong><br>
+    → Template : <strong>3D (Core)</strong> (pas URP pour l'instant)<br>
+    → Nom du projet : <strong>BlocA</strong><br>
+    → Location : ton bureau<br>
+    → Clic <strong>"Create Project"</strong><br><br>
+    Unity s'ouvre. C'est normal si ça prend 2-3 minutes la première fois.
+  </div>
+</div>
+
+<h2>2. STRUCTURE DU PROJET</h2>
+
+<p>Une fois le projet ouvert, crée cette structure de dossiers dans l'onglet <strong>Project</strong> :</p>
+
+<div class="file-tree">
+<span class="folder">Assets/</span><br>
+├── <span class="folder">Scripts/</span><br>
+│   ├── <span class="folder">Core/</span><br>
+│   │   └── <span class="cs">GameManager.cs</span><br>
+│   ├── <span class="folder">Player/</span><br>
+│   │   ├── <span class="cs">PlayerController.cs</span><br>
+│   │   └── <span class="cs">PlayerStats.cs</span><br>
+│   ├── <span class="folder">NPC/</span><br>
+│   │   └── <span class="cs">NPCController.cs</span><br>
+│   └── <span class="folder">Systems/</span><br>
+│       ├── <span class="cs">GameSystems.cs</span> (MissionManager + GangSystem + ZoneManager + etc.)<br>
+│       └── <span class="cs">UIManager.cs</span><br>
+├── <span class="folder">Scenes/</span><br>
+│   └── <span class="cs">MainGame.unity</span><br>
+├── <span class="folder">Prefabs/</span><br>
+├── <span class="folder">Materials/</span><br>
+└── <span class="folder">Audio/</span>
+</div>
+
+<div class="tip">✅ ASTUCE : Copie les fichiers .cs fournis directement dans les dossiers correspondants via l'Explorateur Windows / Finder. Unity les détecte automatiquement.</div>
+
+<h2>3. PACKAGES À INSTALLER</h2>
+
+<p>Dans Unity : <strong>Window → Package Manager</strong> → installe ces packages :</p>
+
+<div class="grid">
+  <div class="card">
+    <div class="card-title">CINEMACHINE</div>
+    <div class="card-desc">Caméra 3ème personne professionnelle. Déjà dans Unity Registry. Requis pour le suivi du joueur.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">INPUT SYSTEM</div>
+    <div class="card-desc">Gestion des touches clavier/manette/tactile unifiée. Remplace l'ancien Input.GetAxis.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">TEXTMESHPRO</div>
+    <div class="card-desc">Texte haute qualité pour tout le HUD. Import les exemples TMP quand Unity le demande.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">AI NAVIGATION</div>
+    <div class="card-desc">NavMesh pour le pathfinding des PNJ. Requis par NPCController. Dans le Registry Unity.</div>
+  </div>
+</div>
+
+<h2>4. CRÉER LA SCÈNE</h2>
+
+<div class="step">
+  <div class="step-num">ÉTAPE 01</div>
+  <div class="step-title">Créer le terrain de base</div>
+  <div class="step-desc">
+    Dans la Hierarchy → <strong>Clic droit → 3D Object → Plane</strong><br>
+    Scale : X=5, Y=1, Z=10 (couloir principal)<br>
+    Renomme-le "Corridor_Floor"<br><br>
+    Ajoute plusieurs Planes pour les cellules, la cour, la cafétéria.<br>
+    Utilise des <strong>Cubes</strong> pour les murs (Scale Y=3 pour hauteur).
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">ÉTAPE 02</div>
+  <div class="step-title">Configurer le NavMesh</div>
+  <div class="step-desc">
+    Sélectionne tous les Planes de sol → dans l'Inspector → coche <strong>"Navigation Static"</strong><br>
+    Puis : <strong>Window → AI → Navigation</strong> → onglet <strong>"Bake"</strong> → clic <strong>"Bake"</strong><br>
+    Tu verras une surface bleue apparaître = zone de déplacement des PNJ. ✅
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">ÉTAPE 03</div>
+  <div class="step-title">Créer le joueur</div>
+  <div class="step-desc">
+    <strong>Hierarchy → Create Empty</strong> → Renomme "Player"<br>
+    Ajoute ces composants dans l'Inspector :<br>
+    • <strong>Character Controller</strong> (radius 0.4, height 1.8)<br>
+    • <strong>PlayerController.cs</strong> (drag depuis Scripts/)<br>
+    • <strong>PlayerStats.cs</strong><br>
+    • <strong>Animator</strong><br>
+    • Tag : <strong>"Player"</strong><br><br>
+    Ajoute un enfant Capsule pour le visuel (3D Object → Capsule).
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">ÉTAPE 04</div>
+  <div class="step-title">Caméra 3ème personne</div>
+  <div class="step-desc">
+    Sélectionne la <strong>Main Camera</strong><br>
+    Dans <strong>PlayerController</strong> → champ "Camera Transform" → glisse la Main Camera<br><br>
+    <strong>OU utilise Cinemachine (recommandé) :</strong><br>
+    • <strong>Cinemachine → Create Virtual Camera</strong><br>
+    • Follow : Player<br>
+    • Look At : Player<br>
+    • Body : 3rd Person Follow<br>
+    • Shoulder Offset : X=0.5, Y=1.5, Z=-4
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">ÉTAPE 05</div>
+  <div class="step-title">Créer un PNJ</div>
+  <div class="step-desc">
+    <strong>Hierarchy → Create Empty</strong> → "NPC_Marco"<br>
+    Composants à ajouter :<br>
+    • <strong>Nav Mesh Agent</strong> (speed 2, radius 0.4)<br>
+    • <strong>NPCController.cs</strong><br>
+    • <strong>Animator</strong><br>
+    • Layer : <strong>"NPC"</strong> (crée ce layer dans Edit → Project Settings → Tags and Layers)<br><br>
+    Configure dans l'Inspector :<br>
+    • NPC Name : "Marco"<br>
+    • Nickname : "Lame"<br>
+    • Faction : "Los Diablos"<br>
+    • Relationship : -20<br>
+    • Wander Radius : 5
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">ÉTAPE 06</div>
+  <div class="step-title">Game Manager</div>
+  <div class="step-desc">
+    <strong>Create Empty → "GameManager"</strong><br>
+    Ajoute tous les scripts système :<br>
+    • GameManager.cs<br>
+    • MissionManager.cs<br>
+    • EconomyManager.cs<br>
+    • GangSystem.cs<br>
+    • ZoneManager.cs<br>
+    • UIManager.cs<br>
+    • TikTokManager.cs<br>
+    • EventManager.cs<br><br>
+    Dans l'Inspector de GameManager, <strong>glisse chaque composant</strong> dans son champ correspondant.
+  </div>
+</div>
+
+<h2>5. TESTER LE JEU</h2>
+
+<div class="tip">▶ Clique le bouton <strong>PLAY</strong> (triangle ▶) en haut de Unity pour tester directement dans l'éditeur. Pas besoin de compiler.</div>
+
+<table>
+  <thead><tr><th>TOUCHE</th><th>ACTION</th></tr></thead>
+  <tbody>
+    <tr><td>WASD / ← ↑ ↓ →</td><td>Déplacement du joueur</td></tr>
+    <tr><td>Shift</td><td>Sprint</td></tr>
+    <tr><td>E</td><td>Interagir avec un PNJ</td></tr>
+    <tr><td>Tab</td><td>Menu missions</td></tr>
+    <tr><td>I</td><td>Inventaire</td></tr>
+    <tr><td>F5</td><td>Sauvegarder</td></tr>
+    <tr><td>Échap</td><td>Pause</td></tr>
+  </tbody>
+</table>
+
+<h2>6. ASSETS GRATUITS RECOMMANDÉS</h2>
+
+<div class="grid">
+  <div class="card">
+    <div class="card-title">🎭 MIXAMO.COM</div>
+    <div class="card-desc">Personnages + animations 3D gratuits. Télécharge un personnage low-poly avec animations Walk, Run, Idle, Attack.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">🏗️ UNITY ASSET STORE</div>
+    <div class="card-desc">Recherche "Prison Kit Free" ou "Modular Prison" pour les assets de bâtiment. Beaucoup de packs gratuits.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">🕹️ SKETCHFAB.COM</div>
+    <div class="card-desc">Modèles 3D gratuits exportables en .fbx pour Unity. Cherche : "prison cell", "prison bars", "bed".</div>
+  </div>
+  <div class="card">
+    <div class="card-title">📱 JOYSTICK PACK</div>
+    <div class="card-desc">Asset Store → cherche "Joystick Pack" (gratuit, Indie Marc). Ajoute un FloatingJoystick pour le mobile.</div>
+  </div>
+</div>
+
+<h2>7. BUILD ET PUBLICATION</h2>
+
+<div class="step">
+  <div class="step-num">PC / Steam</div>
+  <div class="step-title">Build Windows</div>
+  <div class="step-desc">
+    <strong>File → Build Settings → Windows → Build</strong><br>
+    Génère un .exe. Tu peux le déposer sur <strong>itch.io</strong> immédiatement.
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">MOBILE</div>
+  <div class="step-title">Build Android</div>
+  <div class="step-desc">
+    File → Build Settings → Android → Switch Platform<br>
+    Player Settings → Package Name : <strong>com.tonnom.bloca</strong><br>
+    Build → génère un .apk à installer sur ton téléphone.<br><br>
+    <strong>Pour itch.io :</strong> zippe le .exe + les fichiers Data et dépose le zip.
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-num">WEB (GRATUIT)</div>
+  <div class="step-title">WebGL pour Navigateur</div>
+  <div class="step-desc">
+    File → Build Settings → WebGL → Build<br>
+    Dépose le dossier sur <strong>Netlify Drop</strong> ou <strong>itch.io</strong><br>
+    Jouable directement dans le navigateur, sans rien installer !
+  </div>
+</div>
+
+<h2>8. MULTIJOUEUR (ÉTAPE SUIVANTE)</h2>
+
+<p>Une fois le prototype solo fonctionnel :</p>
+<div class="code">
+1. Télécharge Photon PUN 2 (gratuit jusqu'à 20 joueurs simultanés)<br>
+   → Asset Store → cherche "PUN 2 Free"<br><br>
+2. Crée un compte sur photonengine.com → récupère ton App ID gratuit<br><br>
+3. Dans Unity → Window → Photon Unity Networking → PUN Wizard<br>
+   → Entre ton App ID → Setup Project<br><br>
+4. Ajoute PhotonView sur ton Player Prefab<br>
+5. Ajoute PhotonTransformView pour synchroniser les positions<br>
+6. Ajoute PhotonAnimatorView pour les animations
+</div>
+
+<div class="warn">⚠️ Le multijoueur se développe EN DERNIER, après que le solo est stable. Ne commence pas par là.</div>
+
+<h2>9. TIKTOK LIVE INTÉGRATION</h2>
+
+<div class="code">
+// Pour connecter TikTok Live réel :<br>
+// 1. Va sur developers.tiktok.com → créer une app<br>
+// 2. Utilise "TikTok Live Center API" ou un package Unity comme :<br>
+//    "TikTokLiveUnity" sur GitHub<br><br>
+// Pour le streaming :<br>
+// - OBS Studio (gratuit) → Source : Game Capture → BlocA.exe<br>
+// - Stream vers TikTok Live : Settings → Stream → Custom → copie ta clé RTMP TikTok<br>
+// - 1000 followers minimum requis pour aller en LIVE sur TikTok
+</div>
+
+<h2>10. RÉSUMÉ RAPIDE</h2>
+
+<table>
+  <thead><tr><th>ÉTAPE</th><th>TEMPS ESTIMÉ</th><th>RÉSULTAT</th></tr></thead>
+  <tbody>
+    <tr><td>Installer Unity</td><td>15-30 min</td><td>Éditeur prêt</td></tr>
+    <tr><td>Créer projet + structure</td><td>10 min</td><td>Dossiers OK</td></tr>
+    <tr><td>Copier les scripts</td><td>5 min</td><td>Code chargé</td></tr>
+    <tr><td>Créer la scène de base</td><td>30-60 min</td><td>Couloir + cellules</td></tr>
+    <tr><td>Ajouter player + NPC</td><td>20 min</td><td>Personnages visibles</td></tr>
+    <tr><td>Premier test Play</td><td>0 min</td><td>▶ Jeu jouable !</td></tr>
+    <tr><td>Assets Mixamo + polissage</td><td>2-4h</td><td>Rendu propre</td></tr>
+    <tr><td>Build itch.io</td><td>10 min</td><td>Lien public</td></tr>
+  </tbody>
+</table>
+
+<div class="tip">🔥 OBJECTIF RÉALISTE : Prototype jouable en 1 week-end. Jeu complet en 2-3 mois à raison de 2h/soir.</div>
+
+<p style="margin-top:40px;font-size:10px;color:#1a1a1a;text-align:center;letter-spacing:3px">BLOC A — GAME SETUP GUIDE v1.0</p>
+
+</body>
+</html>
