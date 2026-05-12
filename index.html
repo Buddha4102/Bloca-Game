@@ -1,7 +1,125 @@
 Assets/
 ├── Scripts/
 │ ├── Core/
-│ │ └── GameManager.cs
+│ │ └── GameManager.csusing UnityEngine;
+using UnityEngine.Events;
+
+// ═══════════════════════════════════════════════════════════
+//  GAME MANAGER — Singleton central du jeu
+//  Gère l'état global, les events, la communication entre systèmes
+// ═══════════════════════════════════════════════════════════
+public class GameManager : MonoBehaviour
+{
+    public static GameManager Instance { get; private set; }
+
+    [Header("Références Systèmes")]
+    public PlayerStats      playerStats;
+    public MissionManager   missionManager;
+    public EconomyManager   economyManager;
+    public GangSystem       gangSystem;
+    public ZoneManager      zoneManager;
+    public UIManager        uiManager;
+    public EventManager     eventManager;
+    public TikTokManager    tikTokManager;
+
+    [Header("État du Jeu")]
+    public GameState currentState = GameState.Playing;
+    public float     gameTime     = 0f;   // temps de jeu en secondes
+    public int       dayNumber    = 1;
+
+    // ─── Events globaux (autres scripts peuvent s'abonner)
+    public static UnityEvent<int>    OnMoneyChanged    = new UnityEvent<int>();
+    public static UnityEvent<int>    OnRepChanged      = new UnityEvent<int>();
+    public static UnityEvent<string> OnNotification    = new UnityEvent<string>();
+    public static UnityEvent<int>    OnZoneUnlocked    = new UnityEvent<int>();
+    public static UnityEvent         OnNewDay          = new UnityEvent();
+
+    // ─── Données joueur persistantes
+    [HideInInspector] public string playerName    = "Inconnu";
+    [HideInInspector] public string playerFaction = "Les Solitaires";
+
+    void Awake()
+    {
+        // Singleton
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+
+    void Start()
+    {
+        LoadPlayerPrefs();
+        InitSystems();
+        ShowNotification("Bienvenue au Bloc A, " + playerName);
+    }
+
+    void Update()
+    {
+        if (currentState != GameState.Playing) return;
+
+        gameTime += Time.deltaTime;
+
+        // Nouveau jour toutes les 10 minutes de jeu réel
+        if (gameTime % 600f < Time.deltaTime)
+        {
+            dayNumber++;
+            OnNewDay.Invoke();
+            ShowNotification("Jour " + dayNumber + " — Nouvelle journée en prison.");
+        }
+
+        // Drain passif toutes les 30 secondes
+        if (Mathf.FloorToInt(gameTime) % 30 == 0 && Time.deltaTime > 0)
+        {
+            playerStats.ModifyStat(StatType.Energy, -1);
+            playerStats.ModifyStat(StatType.Morale, -0.5f);
+        }
+    }
+
+    void InitSystems()
+    {
+        // Initialise tous les systèmes dans le bon ordre
+        playerStats?.Init(playerName, playerFaction);
+        gangSystem?.Init(playerFaction);
+        zoneManager?.Init();
+        missionManager?.Init();
+        economyManager?.Init();
+        uiManager?.Init();
+        eventManager?.Init();
+        tikTokManager?.Init();
+    }
+
+    // ─── Méthodes globales utilitaires
+    public static void ShowNotification(string message)
+    {
+        OnNotification.Invoke(message);
+        Debug.Log("[NOTIF] " + message);
+    }
+
+    public void PauseGame()  { currentState = GameState.Paused;  Time.timeScale = 0f; }
+    public void ResumeGame() { currentState = GameState.Playing; Time.timeScale = 1f; }
+    public void OpenDialogue()  { currentState = GameState.Dialogue; }
+    public void CloseDialogue() { currentState = GameState.Playing;  }
+
+    void LoadPlayerPrefs()
+    {
+        playerName    = PlayerPrefs.GetString("PlayerName", "Détenu #7");
+        playerFaction = PlayerPrefs.GetString("PlayerFaction", "Les Solitaires");
+    }
+
+    public void SaveGame()
+    {
+        PlayerPrefs.SetString("PlayerName",    playerName);
+        PlayerPrefs.SetString("PlayerFaction", playerFaction);
+        PlayerPrefs.SetInt("Money",  playerStats.money);
+        PlayerPrefs.SetInt("Rep",    playerStats.reputation);
+        PlayerPrefs.SetInt("Zone",   zoneManager.currentZone);
+        PlayerPrefs.SetInt("Day",    dayNumber);
+        PlayerPrefs.Save();
+        ShowNotification("Jeu sauvegardé ✓");
+    }
+}
+
+public enum GameState { Playing, Paused, Dialogue, CutScene, Dead }
 │ ├── Player/
 │ │ ├── PlayerController.cs
 │ │ └── PlayerStats.cs
