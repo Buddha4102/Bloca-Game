@@ -121,7 +121,234 @@ public class GameManager : MonoBehaviour
 
 public enum GameState { Playing, Paused, Dialogue, CutScene, Dead }
 │ ├── Player/
-│ │ ├── PlayerController.cs
+│ │ ├── PlayerController.cs using UnityEngine;
+
+// ═══════════════════════════════════════════════════════════
+//  PLAYER CONTROLLER — Déplacement style GTA (3ème personne)
+//  Requiert : CharacterController, Animator, Camera Cinemachine
+// ═══════════════════════════════════════════════════════════
+[RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(Animator))]
+public class PlayerController : MonoBehaviour
+{
+    [Header("Déplacement")]
+    public float walkSpeed   = 3.5f;
+    public float runSpeed    = 7f;
+    public float turnSpeed   = 12f;
+    public float gravity     = -20f;
+    public float jumpHeight  = 1.2f;
+
+    [Header("Caméra")]
+    public Transform cameraTransform;   // assigne la Main Camera ici
+    public float cameraDistance  = 5f;
+    public float cameraHeight    = 2.5f;
+    public float cameraSmooth    = 8f;
+    public float mouseSensitivity = 2f;
+
+    [Header("Interaction")]
+    public float interactRadius = 2.5f;
+    public LayerMask npcLayer;
+    public KeyCode interactKey = KeyCode.E;
+
+    [Header("Mobile")]
+    public Joystick mobileJoystick;     // assigne le FloatingJoystick UI
+    public bool     isMobile = false;
+
+    // ─── Privé
+    CharacterController _cc;
+    Animator            _anim;
+    Vector3             _velocity;
+    float               _camYaw   = 0f;
+    float               _camPitch = 20f;
+    bool                _isGrounded;
+    NPCController       _nearestNPC;
+
+    // Animation IDs
+    static readonly int _animSpeed    = Animator.StringToHash("Speed");
+    static readonly int _animGrounded = Animator.StringToHash("Grounded");
+    static readonly int _animJump     = Animator.StringToHash("Jump");
+
+    void Awake()
+    {
+        _cc   = GetComponent<CharacterController>();
+        _anim = GetComponent<Animator>();
+
+        if (!isMobile)
+            Cursor.lockState = CursorLockMode.Locked;
+    }
+
+    void Update()
+    {
+        if (GameManager.Instance?.currentState == GameState.Dialogue) return;
+        if (GameManager.Instance?.currentState == GameState.Paused)   return;
+
+        HandleGravity();
+        HandleMovement();
+        HandleCamera();
+        HandleInteraction();
+        HandleActions();
+    }
+
+    // ─── GRAVITÉ
+    void HandleGravity()
+    {
+        _isGrounded = _cc.isGrounded;
+        _anim.SetBool(_animGrounded, _isGrounded);
+
+        if (_isGrounded && _velocity.y < 0)
+            _velocity.y = -2f;
+
+        _velocity.y += gravity * Time.deltaTime;
+        _cc.Move(_velocity * Time.deltaTime);
+    }
+
+    // ─── MOUVEMENT
+    void HandleMovement()
+    {
+        float horizontal = 0f;
+        float vertical   = 0f;
+
+        if (isMobile && mobileJoystick != null)
+        {
+            horizontal = mobileJoystick.Horizontal;
+            vertical   = mobileJoystick.Vertical;
+        }
+        else
+        {
+            horizontal = Input.GetAxis("Horizontal");
+            vertical   = Input.GetAxis("Vertical");
+        }
+
+        bool isSprinting = Input.GetKey(KeyCode.LeftShift) && !isMobile;
+        float speed = isSprinting ? runSpeed : walkSpeed;
+
+        Vector3 moveDir = new Vector3(horizontal, 0f, vertical).normalized;
+
+        if (moveDir.magnitude >= 0.1f)
+        {
+            // Direction relative à la caméra
+            float targetAngle = Mathf.Atan2(moveDir.x, moveDir.z)
+                              * Mathf.Rad2Deg + _camYaw;
+            float smoothAngle = Mathf.LerpAngle(
+                transform.eulerAngles.y, targetAngle,
+                turnSpeed * Time.deltaTime);
+
+            transform.rotation = Quaternion.Euler(0f, smoothAngle, 0f);
+
+            Vector3 moveVector = Quaternion.Euler(0f, targetAngle, 0f)
+                               * Vector3.forward;
+            _cc.Move(moveVector * speed * Time.deltaTime);
+        }
+
+        _anim.SetFloat(_animSpeed, moveDir.magnitude * speed);
+    }
+
+    // ─── CAMÉRA TPS
+    void HandleCamera()
+    {
+        if (cameraTransform == null) return;
+
+        if (!isMobile)
+        {
+            _camYaw   += Input.GetAxis("Mouse X") * mouseSensitivity;
+            _camPitch -= Input.GetAxis("Mouse Y") * mouseSensitivity;
+            _camPitch  = Mathf.Clamp(_camPitch, 5f, 60f);
+        }
+
+        // Position cible derrière le joueur
+        Quaternion rot   = Quaternion.Euler(_camPitch, _camYaw, 0f);
+        Vector3 offset   = rot * new Vector3(0f, 0f, -cameraDistance);
+        Vector3 camTarget = transform.position
+                          + Vector3.up * cameraHeight
+                          + offset;
+
+        // Collision caméra avec les murs
+        if (Physics.SphereCast(transform.position + Vector3.up * cameraHeight,
+            0.2f, (camTarget - transform.position - Vector3.up * cameraHeight).normalized,
+            out RaycastHit hit, cameraDistance))
+        {
+            camTarget = hit.point + hit.normal * 0.2f;
+        }
+
+        cameraTransform.position = Vector3.Lerp(
+            cameraTransform.position, camTarget, cameraSmooth * Time.deltaTime);
+        cameraTransform.LookAt(transform.position + Vector3.up * 1.2f);
+    }
+
+    // ─── INTERACTION NPC
+    void HandleInteraction()
+    {
+        // Détecte le NPC le plus proche
+        Collider[] nearby = Physics.OverlapSphere(
+            transform.position, interactRadius, npcLayer);
+
+        _nearestNPC = null;
+        float closest = interactRadius;
+
+        foreach (var col in nearby)
+        {
+            float d = Vector3.Distance(transform.position, col.transform.position);
+            if (d < closest)
+            {
+                closest = d;
+                _nearestNPC = col.GetComponent<NPCController>();
+            }
+        }
+
+        // Afficher hint
+        UIManager ui = GameManager.Instance?.uiManager;
+        if (_nearestNPC != null)
+            ui?.ShowInteractHint(_nearestNPC.npcName);
+        else
+            ui?.HideInteractHint();
+
+        // Déclencher dialogue
+        if (_nearestNPC != null &&
+            (Input.GetKeyDown(interactKey) || IsInteractButtonPressed()))
+        {
+            _nearestNPC.StartDialogue();
+        }
+    }
+
+    // ─── ACTIONS (salle de bain, dormir, etc.)
+    void HandleActions()
+    {
+        // Saut (désactivable selon la zone)
+        if (Input.GetButtonDown("Jump") && _isGrounded)
+        {
+            _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            _anim.SetTrigger(_animJump);
+        }
+
+        // Sauvegarde rapide
+        if (Input.GetKeyDown(KeyCode.F5))
+            GameManager.Instance?.SaveGame();
+
+        // Pause
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (GameManager.Instance?.currentState == GameState.Playing)
+                GameManager.Instance.PauseGame();
+            else
+                GameManager.Instance?.ResumeGame();
+        }
+    }
+
+    bool IsInteractButtonPressed()
+    {
+        // Bouton mobile "E" dans l'UI
+        return false; // sera géré par le bouton UI
+    }
+
+    // Appelé par bouton mobile UI
+    public void MobileInteract() => _nearestNPC?.StartDialogue();
+
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, interactRadius);
+    }
+}
 │ │ └── PlayerStats.cs
 │ ├── NPC/
 │ │ └── NPCController.cs
